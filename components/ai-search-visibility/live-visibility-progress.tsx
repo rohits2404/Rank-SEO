@@ -53,12 +53,25 @@ export function LiveVisibilityProgress({
         accessToken,
         enabled: Boolean(runId && accessToken),
         skipColumns: ["payload"],
+
         onComplete: (completedRun, completionError) => {
-            const result = completedRun.output?.report ?? null;
+            const rawResult = completedRun.output?.report ?? null;
+
+            const result: VisibilityReportResult | null = rawResult
+                ? {
+                      ...rawResult,
+                      competitors: rawResult.competitors.map((competitor) => ({
+                          ...competitor,
+                          domain: competitor.domain ?? undefined,
+                      })),
+                  }
+                : null;
+
             const succeeded =
                 completedRun.status === "COMPLETED" &&
                 !completionError &&
                 result !== null;
+
             const errorMessage = succeeded
                 ? undefined
                 : (completionError?.message ??
